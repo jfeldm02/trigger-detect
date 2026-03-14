@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Upload Video</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Space+Grotesk:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero">
+        <div class="hero-text">
+          <p class="eyebrow">Step 2</p>
+          <h1>Upload your video.</h1>
+          <p class="subhead">
+            We'll scan it using your tags: {% if tags %}{{ tags | join(", ") }}{% else %}none yet{% endif %}.
+          </p>
+        </div>
+        <div class="hero-card">
+          <h2>Choose a file</h2>
+          <p class="helper">Upload an MP4 and we'll render it below.</p>
+          <form class="trigger-form" action="{{ url_for('video_upload.upload_video') }}" method="post" enctype="multipart/form-data">
+            <label for="video">Video file</label>
+            <input id="video" name="video" type="file" accept="video/mp4,video/*" required />
+            <button class="primary" type="submit">Upload video</button>
+          </form>
+        </div>
+      </header>
+
+      <section class="tags-section">
+        <div class="section-header">
+          <h2>Preview</h2>
+          <p>Your uploaded video will appear here.</p>
+        </div>
+        {% if video_url %}
+          <video class="video-player" controls>
+            <source src="{{ video_url }}" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+          <div class="tags-actions">
+            <form action="{{ url_for('video_upload.process_video_request') }}" method="post">
+              <button class="primary" type="submit">Continue</button>
+            </form>
+          </div>
+        {% else %}
+          <p class="helper">No video uploaded yet.</p>
+        {% endif %}
+      </section>
+    </div>
+  </body>
+</html>

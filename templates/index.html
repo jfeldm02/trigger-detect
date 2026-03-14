@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trigger Detect</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Space+Grotesk:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero">
+        <div class="hero-text">
+          <p class="eyebrow">Trigger Detect</p>
+          <h1>Customize what you want to skip.</h1>
+          <p class="subhead">
+            Describe your triggers in plain language. We'll convert them into visual tags you can review and edit.
+          </p>
+        </div>
+        <div class="hero-card">
+          <h2>Describe your triggers</h2>
+          <p class="helper">
+            Please try to describe your Triggers as clearly as possible.
+          </p>
+          <form id="trigger-form" class="trigger-form">
+            <label for="trigger-text">Your triggers</label>
+            <textarea
+              id="trigger-text"
+              name="text"
+              rows="5"
+              placeholder="I am afraid of spiders, snakes, and very high cliffs..."
+              required
+            ></textarea>
+            <div class="row">
+              <div class="field">
+                <label for="max-tags">Max tags</label>
+                <select id="max-tags" name="max_tags">
+                  <option value="5">5</option>
+                  <option value="8">8</option>
+                  <option value="10" selected>10</option>
+                  <option value="15">15</option>
+                </select>
+              </div>
+              <button type="submit" class="primary">Generate tags</button>
+            </div>
+          </form>
+          <div id="status" class="status" aria-live="polite"></div>
+        </div>
+      </header>
+
+      <section class="tags-section">
+        <div class="section-header">
+          <h2>Edit your tags</h2>
+          <p>Refine the list below. You can edit, remove, or add new tags.</p>
+        </div>
+        <div id="tags-container" class="tags-container"></div>
+        <div class="tags-actions">
+          <button id="add-tag" class="ghost" type="button">+ Add tag</button>
+          <button id="save-tags" class="primary" type="button">Save tags</button>
+        </div>
+        <div id="save-status" class="status" aria-live="polite"></div>
+      </section>
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+  </body>
+</html>

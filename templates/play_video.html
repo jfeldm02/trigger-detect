@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Play Video</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Space+Grotesk:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero">
+        <div class="hero-text">
+          <p class="eyebrow">Step 3</p>
+          <h1>Ready to play.</h1>
+          <p class="subhead">Preview the video and start when you're ready.</p>
+        </div>
+      </header>
+
+      <section class="tags-section">
+        <div class="section-header">
+          <h2>Video player</h2>
+          <p>Compare the original and edited video side by side.</p>
+        </div>
+        {% if edited_url %}
+          <div class="video-grid">
+            <div class="video-card">
+              <h3>Original</h3>
+              <video class="video-player" controls preload="auto">
+                <source src="{{ video_url }}" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+            <div class="video-card">
+              <h3>Edited</h3>
+              <video class="video-player" controls preload="auto">
+                <source src="{{ edited_url }}" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          </div>
+        {% else %}
+          <p class="helper">Processing video. This may take a couple of minutes.</p>
+          <div class="status" id="processing-status"></div>
+        {% endif %}
+      </section>
+    </div>
+
+    <script>
+      const statusEl = document.getElementById("processing-status");
+
+      if (statusEl) {
+        const poll = async () => {
+          const res = await fetch("/process-status");
+          const data = await res.json();
+          if (data.status === "done") {
+            window.location.reload();
+            return;
+          }
+          if (data.status === "error") {
+            statusEl.textContent = data.error || "Processing failed.";
+            return;
+          }
+          statusEl.textContent = "Processing... please wait.";
+          setTimeout(poll, 2000);
+        };
+        poll();
+      }
+    </script>
+  </body>
+</html>
