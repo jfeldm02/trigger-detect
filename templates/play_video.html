@@ -25,51 +25,132 @@
       <section class="tags-section">
         <div class="section-header">
           <h2>Video player</h2>
-          <p>Compare the original and edited video side by side.</p>
+          <p>Original video on the left, live-processed frames on the right.</p>
         </div>
-        {% if edited_url %}
-          <div class="video-grid">
-            <div class="video-card">
-              <h3>Original</h3>
+        <div class="video-grid">
+          <div class="video-card">
+            <h3>Original</h3>
+            {% if video_url %}
               <video class="video-player" controls preload="auto">
                 <source src="{{ video_url }}" type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
-            </div>
-            <div class="video-card">
-              <h3>Edited</h3>
-              <video class="video-player" controls preload="auto">
-                <source src="{{ edited_url }}" type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            </div>
+            {% else %}
+              <p class="helper">No original video available.</p>
+            {% endif %}
           </div>
-        {% else %}
-          <p class="helper">Processing video. This may take a couple of minutes.</p>
-          <div class="status" id="processing-status"></div>
-        {% endif %}
+          <div class="video-card">
+            <h3>Edited (Live)</h3>
+            <canvas id="edited-canvas" class="video-player" width="640" height="360"></canvas>
+          </div>
+        </div>
+        <div class="tags-actions">
+          <button id="start-stream" class="primary" type="button">Play</button>
+        </div>
+        <div class="status" id="stream-status"></div>
       </section>
     </div>
 
     <script>
-      const statusEl = document.getElementById("processing-status");
+      const startButton = document.getElementById("start-stream");
+      const statusEl = document.getElementById("stream-status");
+      const canvas = document.getElementById("edited-canvas");
+      const ctx = canvas.getContext("2d");
 
-      if (statusEl) {
-        const poll = async () => {
-          const res = await fetch("/process-status");
+      const bufferSeconds = {{ buffer_seconds }};
+      let sessionId = null;
+      let fps = 30;
+      let frameInterval = 1000 / fps;
+      let lastIndex = -1;
+      let queue = [];
+      let playing = false;
+      let stopped = false;
+      let streamDone = false;
+
+      const decodeFrame = (b64) => {
+        const binary = atob(b64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+        const blob = new Blob([bytes], { type: "image/jpeg" });
+        return createImageBitmap(blob);
+      };
+
+      const fetchNext = async () => {
+        if (!sessionId || stopped) return;
+        const res = await fetch(`/stream/next?session_id=${sessionId}&last_index=${lastIndex}`);
+        const data = await res.json();
+        if (data.status === "ready") {
+          lastIndex = data.index;
+          fps = data.fps || fps;
+          frameInterval = 1000 / fps;
+          if (data.width && data.height) {
+            canvas.width = data.width;
+            canvas.height = data.height;
+          }
+          const bitmaps = await Promise.all(data.frames.map(decodeFrame));
+          queue.push(...bitmaps);
+        } else if (data.status === "done") {
+          streamDone = true;
+          stopped = true;
+        }
+        if (!stopped) {
+          setTimeout(fetchNext, 50);
+        }
+      };
+
+      const playLoop = () => {
+        if (!playing) return;
+        if (queue.length > 0) {
+          const frame = queue.shift();
+          ctx.drawImage(frame, 0, 0, canvas.width, canvas.height);
+          frame.close();
+        }
+        if (streamDone && queue.length === 0) {
+          statusEl.textContent = "Streaming Completed";
+          return;
+        }
+        setTimeout(playLoop, frameInterval);
+      };
+
+      if (startButton) {
+        startButton.addEventListener("click", async () => {
+          if (sessionId) {
+            await fetch(`/stream/stop?session_id=${sessionId}`, { method: "POST" });
+          }
+          sessionId = null;
+          queue = [];
+          playing = false;
+          stopped = false;
+          streamDone = false;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          startButton.disabled = true;
+          statusEl.textContent = "Buffering...";
+
+          const res = await fetch("/stream/start", { method: "POST" });
           const data = await res.json();
-          if (data.status === "done") {
-            window.location.reload();
+          if (!res.ok) {
+            statusEl.textContent = data.error || "Failed to start stream.";
+            startButton.disabled = false;
             return;
           }
-          if (data.status === "error") {
-            statusEl.textContent = data.error || "Processing failed.";
-            return;
+          sessionId = data.session_id;
+          fps = data.fps || fps;
+          frameInterval = 1000 / fps;
+          if (data.width && data.height) {
+            canvas.width = data.width;
+            canvas.height = data.height;
           }
-          statusEl.textContent = "Processing... please wait.";
-          setTimeout(poll, 2000);
-        };
-        poll();
+
+          fetchNext();
+
+          setTimeout(() => {
+            playing = true;
+            statusEl.textContent = "Playing...";
+            playLoop();
+          }, bufferSeconds * 1000);
+        });
       }
     </script>
   </body>

@@ -44,9 +44,7 @@
             Your browser does not support the video tag.
           </video>
           <div class="tags-actions">
-            <form action="{{ url_for('video_upload.process_video_request') }}" method="post">
-              <button class="primary" type="submit">Continue</button>
-            </form>
+            <a class="primary button-link" href="{{ url_for('video_upload.play_page') }}">Continue</a>
           </div>
         {% else %}
           <p class="helper">No video uploaded yet.</p>

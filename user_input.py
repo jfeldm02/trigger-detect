@@ -44,6 +44,7 @@ def extract_tags():
                 "role": "system",
                 "content": (
                     "You must extract tags from a given text. The tags can be direct entities from the text or example options from the text. The tag should always be a tangible object. The more you generalize the better.You must provide these tags in a Python list format i.e. between two square brackets ([])."+
+                    "Any text that discusses, praises or degrades sensitive topics such as Gender, Caste, Creed, Religion, Political Inclination, Nationality, Citizenship Status, Immigration Status, Countries and their flags or Sex must not be encouraged. In such a case you must always return an empty list ([])"+
                     f"The tags must be relevant to the text provided. Extract at most {max_tags} tags. An example is provided for your reference: \n"+
                     "EXAMPLE: \n "+
                     "INPUT text: I am afraid of creepy crawlies or anything with more than 4 legs, especially spiders. They freak me out."+
@@ -70,6 +71,7 @@ def extract_tags():
         {
             "tags": tags,
             "model": response.model,
+            "message": "Ethics Violation" if len(tags) == 0 else "Tags Extracted"
         }
     )
 

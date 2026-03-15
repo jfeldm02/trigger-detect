@@ -70,6 +70,11 @@ form.addEventListener("submit", async (event) => {
     }
 
     const data = await response.json();
+    if (data.tags.length === 0) {
+      alert("Your Message violated our community guidelines.");
+      setStatus(statusEl, "Your Message violated our community guidelines.", true);
+      return
+    }
     renderTags(data.tags || []);
     setStatus(statusEl, "Tags generated. Review them below.");
   } catch (error) {
