@@ -11,6 +11,8 @@ from video_upload import bp as video_upload_bp
 def create_app() -> Flask:
     app = Flask(__name__)
     app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", "dev-secret-key")
+    app.config["SESSION_COOKIE_SAMESITE"] = "None"
+    app.config["SESSION_COOKIE_SECURE"] = True
     app.register_blueprint(user_input_bp)
     app.register_blueprint(video_upload_bp)
     return app
