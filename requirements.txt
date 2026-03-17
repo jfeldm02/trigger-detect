@@ -1,0 +1,5 @@
+flask
+huggingface_hub
+ultralytics
+opencv-python-headless
+numpy

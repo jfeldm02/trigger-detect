@@ -1,0 +1,4 @@
+temp_videos/
+*.pt
+__pycache__/
+.env

@@ -80,7 +80,7 @@ def _encode_frames(frames: List) -> List[str]:
 def _stream_worker(session_id: str, input_path: Path, model_name: str, vocabulary: List[str]):
     state = _streams[session_id]
     try:
-        model = get_model(model_name, vocabulary, device="mps")
+        model = get_model(model_name, vocabulary, device="cpu")
         cap = cv2.VideoCapture(str(input_path))
         if not cap.isOpened():
             raise RuntimeError("Failed to open video.")
@@ -135,7 +135,7 @@ def stream_start():
     if not vocabulary:
         return jsonify({"error": "No tags available for vocabulary"}), 400
 
-    model_name = os.getenv("YOLOWORLD_MODEL", "yolov8s-worldv2.pt")
+    model_name = os.getenv("YOLOWORLD_MODEL", "yolov8n-worldv2.pt")
     session_id = uuid.uuid4().hex
 
     cap = cv2.VideoCapture(str(input_path))
@@ -237,7 +237,7 @@ def _process_video_job(input_path: Path, output_path: Path, json_path: Path, voc
         PROCESS_STATE["status"] = "running"
         PROCESS_STATE["error"] = None
 
-        model_name = os.getenv("YOLOWORLD_MODEL", "yolov8s-worldv2.pt")
+        model_name = os.getenv("YOLOWORLD_MODEL", "yolov8n-worldv2.pt")
 
         cap = cv2.VideoCapture(str(input_path))
         if not cap.isOpened():
@@ -276,7 +276,7 @@ def _process_video_job(input_path: Path, output_path: Path, json_path: Path, voc
 
         def worker():
             nonlocal next_index
-            model_instance = get_model(model_name, vocabulary, device="mps")
+            model_instance = get_model(model_name, vocabulary, device="cpu")
             while True:
                 with lock:
                     if next_index >= len(batches):
