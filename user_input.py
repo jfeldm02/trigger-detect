@@ -9,7 +9,7 @@ import ast
 
 bp = Blueprint("user_input", __name__)
 
-HF_MODEL = os.getenv("HF_MODEL", "mistralai/Mistral-7B-Instruct-v0.3")
+HF_MODEL = os.getenv("HF_MODEL", "HuggingFaceH4/zephyr-7b-beta")
 client = InferenceClient(model=HF_MODEL, token=os.getenv("HF_TOKEN"))
 
 
