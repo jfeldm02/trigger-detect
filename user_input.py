@@ -9,8 +9,9 @@ import ast
 
 bp = Blueprint("user_input", __name__)
 
-HF_MODEL = os.getenv("HF_MODEL", "google/gemma-2-2b-it")
-client = InferenceClient(token=os.getenv("HF_TOKEN"))
+HF_MODEL = os.getenv("HF_MODEL", "Qwen/Qwen2.5-Coder-32B-Instruct")
+HF_PROVIDER = os.getenv("HF_PROVIDER", "novita")
+client = InferenceClient(provider=HF_PROVIDER, token=os.getenv("HF_TOKEN"))
 
 
 def _safe_parse_tags(text: str) -> List[str]:
@@ -52,14 +53,16 @@ def extract_tags():
         "Output: ['insects', 'creepy crawlies', 'spiders', 'centipede', 'tarantula']"
     )
 
-    prompt = f"<start_of_turn>user\n{system_prompt}\n\n{user_text}<end_of_turn>\n<start_of_turn>model\n"
-
     try:
-        output_text = client.text_generation(
-            prompt,
+        response = client.chat_completion(
             model=HF_MODEL,
-            max_new_tokens=512,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_text},
+            ],
+            max_tokens=512,
         )
+        output_text = response.choices[0].message.content or ""
     except Exception as exc:
         return jsonify({"error": f"HF Inference API error: {exc}"}), 502
     tags = _safe_parse_tags(output_text)
