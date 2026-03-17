@@ -9,8 +9,8 @@ import ast
 
 bp = Blueprint("user_input", __name__)
 
-HF_MODEL = os.getenv("HF_MODEL", "Qwen/Qwen2.5-Coder-32B-Instruct")
-HF_PROVIDER = os.getenv("HF_PROVIDER", "novita")
+HF_MODEL = os.getenv("HF_MODEL", "meta-llama/Llama-3.3-70B-Instruct")
+HF_PROVIDER = os.getenv("HF_PROVIDER", "sambanova")
 client = InferenceClient(provider=HF_PROVIDER, token=os.getenv("HF_TOKEN"))
 
 
